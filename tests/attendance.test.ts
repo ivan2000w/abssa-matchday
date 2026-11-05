@@ -24,6 +24,7 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
     await db.exec(await readFile(new URL('../supabase/migrations/202611050001_attendance.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/202611050002_calendar_import.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/202611050003_profile_photos.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202611050004_golden_squad.sql', import.meta.url), 'utf8'));
     await db.query('insert into auth.users values ($1,$2,now()),($3,$4,now()),($5,$6,now()),($7,$8,null)',
       [coach,'coach@example.test',player,'player@example.test',outsider,'outsider@example.test',unverified,'unverified@example.test']);
     await db.exec("insert into team_private.bootstrap_coach values ('coach@example.test')");
@@ -85,6 +86,35 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
       await as(player);
       await db.query('select public.set_profile_photo(null)');
       assert.deepEqual((await db.query<{user_id:string}>('select user_id from public.team_member_photos')).rows.map(r=>r.user_id),[coach]);
+    });
+    await t.test('Golden Squad imports fail closed and approved members link only their own account',async()=>{
+      const catalog=Array.from({length:26},(_,i)=>({id:String(i+1),display_name:`Test player ${i+1}`,position:'MC',photo_url:null}));
+      await as(player);
+      await assert.rejects(db.query('select public.import_golden_roster($1::jsonb)',[JSON.stringify(catalog)]),/permission denied/);
+      await db.exec('reset role; set role service_role');
+      await db.query('select public.import_golden_roster($1::jsonb)',[JSON.stringify(catalog)]);
+      await assert.rejects(db.query('select public.import_golden_roster(null)'),/Invalid roster/);
+      await assert.rejects(db.query('select public.import_golden_roster($1::jsonb)',[JSON.stringify(catalog.slice(0,3))]),/Incomplete roster/);
+      const invalid: {id:string;display_name:string;position:string;photo_url:string|null}[]=catalog.map(p=>({...p}));invalid[25].photo_url='https://wrong.test/photo.jpg';
+      await assert.rejects(db.query('select public.import_golden_roster($1::jsonb)',[JSON.stringify(invalid)]),/check constraint/);
+      await as(outsider);
+      assert.equal((await db.query('select * from public.golden_players')).rows.length,0);
+      await assert.rejects(db.query("select public.link_golden_player('1')"),/approval/);
+      await as(coach); await db.query("select public.link_golden_player('1')");
+      await as(player); assert.equal((await db.query('select * from public.golden_players')).rows.length,26);
+      await assert.rejects(db.query("select public.link_golden_player('1')"),/already connected/);
+      await db.query("select public.link_golden_player('2')");
+      assert.equal((await db.query<{player_id:string}>('select player_id from public.golden_member_links where user_id=$1',[player])).rows[0].player_id,'2');
+      await assert.rejects(db.query("update public.golden_member_links set player_id='3'"),/permission denied/);
+      await assert.rejects(db.query('select public.unlink_golden_member($1)',[coach]),/Only coaches/);
+      await as(coach);await db.query('select public.unlink_golden_member($1)',[player]);
+      await as(player);await db.query("select public.link_golden_player('26')");
+      await db.exec('reset role; set role service_role');
+      await db.query('select public.import_golden_roster($1::jsonb)',[JSON.stringify(catalog.slice(0,25))]);
+      await as(player);assert.equal((await db.query('select * from public.golden_players')).rows.length,25);
+      await assert.rejects(db.query("select public.link_golden_player('26')"),/no longer available/);
+      await db.query('select public.link_golden_player(null)');
+      assert.equal((await db.query('select * from public.golden_member_links where user_id=$1',[player])).rows.length,0);
     });
     await t.test('coach can transfer role but cannot remove the last coach',async()=>{
       await as(coach);

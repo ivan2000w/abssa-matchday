@@ -534,3 +534,26 @@ button:focus-visible, a:focus-visible { outline: 3px solid #78a62d; outline-offs
   .attendance-roster .attendance-person { align-items:flex-start; flex-wrap:wrap; }
   .attendance-roster .attendance-person>.attendance-button { margin-left:47px; max-width:none; }
 }
+
+/* Golden Squad remains live inside the approved team area. */
+.player-avatar img { object-position:center top; }
+.team-space-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#e7ecde; padding:5px; border-radius:14px; }
+.team-space-tabs button { min-height:46px; padding:10px; border-radius:10px; color:#52665c; font-size:14px; font-weight:800; }
+.team-space-tabs button[aria-pressed=true] { background:#14343c; color:#edffc5; box-shadow:0 3px 10px #122b2915; }
+.golden-profile-link summary { display:flex; align-items:center; gap:8px; }
+.golden-linked-label { margin-left:auto; color:#4e752f; font-size:11px; }
+.golden-profile-link select { width:100%; min-height:48px; padding:10px; border-radius:10px; border:1px solid #80928b; background:white; color:#14333a; font-size:16px; }
+.golden-link-preview { display:flex; align-items:center; gap:16px; margin:18px 0; }
+.golden-link-preview strong { display:block; }
+.golden-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.attendance .golden-heading h2 { display:flex; gap:8px; align-items:center; margin:5px 0; }
+.golden-description { color:#5c706a; font-size:13px; }
+.golden-toolbar { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.golden-frame { display:block; width:100%; height:850px; border:0; border-radius:20px; background:#152638; box-shadow:0 10px 25px #15263818; }
+.golden-squad>small { margin-top:12px; }
+@media(max-width:760px) {
+ .golden-frame { height:calc(100dvh - 140px); min-height:560px; border-radius:14px; }
+ .golden-heading { align-items:flex-start; }
+ .golden-heading .attendance-button { font-size:12px; padding:8px 10px; }
+ .golden-linked-label { font-size:10px; }
+}

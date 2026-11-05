@@ -105,3 +105,36 @@ URLs rather than increasing the database payload limit.
 Fixture logos use explicit, tested SportEasy aliases, preserving title order.
 Training, social events, unknown opponents and different reserve teams are never
 fuzzy-matched to another club. Missing verified crests retain neutral initials.
+
+## Golden Squad integration
+
+Apply `202611050004_golden_squad.sql` before releasing the integration. The private
+team space embeds the club's original Golden Squad app: cards, pictures, rankings,
+season and monthly views remain live and club-managed. These ratings are not ABSSA
+league standings. The iframe is sandboxed, sends no referrer, and receives no ABSSA
+authentication token. Its local name selector does not change account identity.
+
+`golden_players` contains source IDs, display names, positions, photo URLs and the
+last source check. `golden_member_links` explicitly connects an approved member to
+one player ID. It never grants membership or a coach role. A card can be connected
+to only one account; coaches can disconnect mistaken links. Uploaded profile
+photos take priority over Golden Squad images. Disconnected/inactive profiles fall
+back to uploaded photos or initials. No player catalog or personal picture is
+committed to the public repository.
+
+`Sync Golden Squad player directory` runs hourly at :42, with GitHub's usual
+scheduling delays, and supports manual dispatch. It uses the existing
+`SUPABASE_URL` repository variable and encrypted `SUPABASE_SECRET_KEY` secret.
+`npm run refresh:golden` reads only the published rankings HTML, validates its
+page identity, all rows, unique IDs, roster size and approved image host/path,
+then imports atomically using a service-role-only RPC. Errors preserve the prior
+directory. A valid complete roster marks missing players inactive and clears
+removed photo URLs. The iframe itself needs no scheduled refresh to get current
+rankings when opened/reloaded. Changes to source markup or asset hosting may require
+updating the parser; failed workflows report this rather than inventing data.
+
+Source: https://golden-boy-seven.vercel.app/sanserif-fc-r7vzcq/classement
+Source privacy: https://golden-boy-seven.vercel.app/sanserif-fc-r7vzcq/confidentialite
+The source explains that the club administrator maintains these records, and club
+pages are accessible to people with the link. We preserve that source and do not
+copy birthdays or infer identities from similar names.

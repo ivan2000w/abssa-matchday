@@ -1,0 +1,93 @@
+name: Update ABSSA and publish
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '35 19,20,21 * * 6'
+      timezone: Europe/Brussels
+permissions:
+  contents: read
+concurrency:
+  group: abssa-publish
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pages: read
+    outputs:
+      fetched_at: ${{ steps.snapshot.outputs.fetched_at }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Collect and validate official ABSSA data
+        if: github.event_name != 'push'
+        run: npm run refresh:abssa
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Build mobile app
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+        run: npm run build
+      - name: Save verified snapshot history
+        if: github.event_name != 'push'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data/abssa.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update verified ABSSA snapshot'
+            git push origin HEAD:main
+          fi
+      - name: Record verification timestamp
+        id: snapshot
+        run: node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('public/data/abssa.json'));fs.appendFileSync(process.env.GITHUB_OUTPUT,'fetched_at='+d.fetchedAt+'\n');"
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish app
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+      - name: Verify the public site serves this snapshot
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_FETCHED_AT: ${{ needs.build.outputs.fetched_at }}
+        run: |
+          node --input-type=module <<'JS'
+          for (let attempt=0; attempt<12; attempt++) {
+            try {
+              const url = new URL('data/abssa.json', process.env.PAGE_URL);
+              url.searchParams.set('check', String(Date.now()));
+              const response = await fetch(url, {signal:AbortSignal.timeout(15000)});
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
+              const data = await response.json();
+              if (data.sourceStatus === 'verified' && data.fetchedAt === process.env.EXPECTED_FETCHED_AT) {
+                console.log(`Verified live snapshot: ${data.fetchedAt}`); process.exit(0);
+              }
+            } catch(error) { console.log(`Waiting for publication: ${error.message}`); }
+            await new Promise(resolve => setTimeout(resolve,15000));
+          }
+          throw new Error('Published data did not match the verified snapshot');
+          JS

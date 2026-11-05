@@ -39,6 +39,8 @@ jobs:
       - name: Build mobile app
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
       - name: Save verified snapshot history
         if: github.event_name != 'push'

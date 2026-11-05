@@ -27,6 +27,7 @@ import initialSnapshot from '@/public/data/abssa.json';
 import { validateSnapshot } from '@/lib/abssa/validate';
 const verifiedSeed = initialSnapshot as AbssaSnapshot;
 const BASE = import.meta.env.BASE_URL;
+import { ClubBadge } from '@/components/club-badge';
 import { clubIdentity } from '@/lib/abssa/clubs';
 import type { AbssaMatch, AbssaSnapshot } from '@/lib/abssa/types';
 
@@ -62,10 +63,6 @@ function checkedAt(value: string) {
   return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Brussels' }).format(new Date(value));
 }
 
-function initials(team: string) {
-  return (team.replace(/\([^)]*\)/g, '').match(/\p{L}+/gu) ?? []).map((part) => part[0]).join('').slice(0, 3);
-}
-
 function ordinalSuffix(position: number) {
   const mod = position % 100;
   return mod >= 11 && mod <= 13 ? 'th' : position % 10 === 1 ? 'st' : position % 10 === 2 ? 'nd' : position % 10 === 3 ? 'rd' : 'th';
@@ -76,20 +73,6 @@ function outcome(match: AbssaMatch, team: string): Outcome | null {
   if (match.homeScore === match.awayScore) return 'D';
   const won = match.home === team ? match.homeScore > match.awayScore : match.awayScore > match.homeScore;
   return won ? 'W' : 'L';
-}
-
-function ClubBadge({ size = 'medium', team }: { size?: 'tiny' | 'small' | 'medium' | 'large'; team: string }) {
-  const identity = clubIdentity(team);
-  const [failedLogo, setFailedLogo] = useState<string | null>(null);
-  const showLogo = Boolean(identity.logo && failedLogo !== identity.logo);
-  const title = showLogo ? `${team} crest · ${identity.sourceLabel ?? "Club source"}` : `${team} initials — ${identity.logo ? "crest temporarily unavailable" : "official crest not yet verified"}`;
-  return <span
-    className={`club-badge club-badge-${size} ${showLogo ? 'club-badge-official' : 'club-badge-fallback'}`}
-    style={{ '--club-primary': identity.primary, '--club-secondary': identity.secondary } as CSSProperties}
-    title={title}
-  >
-    {showLogo ? <img src={`${BASE}${identity.logo!.replace(/^\//, '')}`} alt={`${team} crest`} decoding="async" onError={() => setFailedLogo(identity.logo!)} /> : <span aria-hidden="true">{initials(team)}</span>}
-  </span>;
 }
 
 function TeamButton({ team, onSelect, className = '' }: { team: string; onSelect: (team: string) => void; className?: string }) {

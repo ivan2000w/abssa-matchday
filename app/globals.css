@@ -483,3 +483,54 @@ button:focus-visible, a:focus-visible { outline: 3px solid #78a62d; outline-offs
   .directory-copy strong { font-size: 17px; }
   .team-profile-hero .club-badge-large { width: 68px; height: 68px; border-radius: 18px; }
 }
+
+/* Team calendar: a readable match card with the original club marks. */
+.attendance-event.event-card { display:block; padding:0; overflow:hidden; background:#fffefa; box-shadow:0 6px 20px #112d3408; }
+.event-card:hover { border-color:#9cba70; box-shadow:0 8px 24px #112d3412; }
+.event-card:focus-visible { outline:3px solid #759d25; outline-offset:3px; }
+.event-card-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; background:#f1f4eb; border-bottom:1px solid #e2e7d9; }
+.event-card-top>span { display:flex; gap:7px; align-items:center; font-size:12px; color:#4b6468; }
+.event-card-top>strong { font-size:15px; color:#163b43; }
+.event-matchup { display:grid; grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr); gap:12px; align-items:center; padding:24px 20px 18px; }
+.event-matchup>div { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; min-width:0; }
+.event-matchup strong { font:750 20px/1.1 var(--font-display); overflow-wrap:anywhere; color:#15343c; }
+.event-matchup .club-badge-large { width:62px; height:62px; border-radius:17px; }
+.event-matchup .event-versus { color:#899693; font-size:12px; font-weight:700; text-align:center; }
+.event-gathering { display:flex; align-items:center; gap:14px; padding:20px; }
+.attendance .event-gathering h2 { margin:0; font-size:22px; }
+.attendance p.event-card-location { display:flex; justify-content:center; gap:6px; align-items:flex-start; padding:0 20px; margin:0 0 20px; font-size:12px; color:#72807e; }
+.event-card-location svg { flex:none; margin-top:3px; }
+.event-card-footer { display:flex; justify-content:space-between; align-items:center; padding:13px 20px; border-top:1px solid #e6eadd; }
+.event-card-footer>span { color:#3c622d; font-size:12px; }
+.event-card-footer>svg { color:#5b753c; }
+.event-detail>.event-matchup { background:#f2f5ec; border:1px solid #e2e8d8; border-radius:16px; margin-bottom:20px; }
+.event-detail>.event-gathering { padding-inline:0; }
+.player-avatar { display:inline-grid; place-items:center; flex:none; width:44px; height:44px; border-radius:50%; overflow:hidden; background:#e8eddf; color:#3e5b50; box-shadow:inset 0 0 0 1px #15343c0a; font-weight:800; font-size:13px; }
+.player-avatar img { width:100%; height:100%; object-fit:cover; }
+.player-avatar-large { width:96px; height:96px; font-size:28px; }
+.player-identity { display:flex; align-items:center; gap:12px; min-width:0; }
+.player-identity>div { min-width:0; }
+.profile-photo-editor summary { cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:750; }
+.photo-edit-layout { display:flex; gap:20px; align-items:center; margin:20px 0; }
+.photo-edit-layout>div { min-width:0; }
+.photo-edit-layout small { display:block; margin-top:8px; font-size:12px; color:#73837d; }
+.photo-picker { display:grid; gap:6px; font-size:13px; font-weight:750; }
+.photo-picker input { max-width:100%; width:100%; font-size:13px; }
+.photo-picker input::file-selector-button { min-height:44px; border:1px solid #cbd5bf; border-radius:10px; background:#f4f7ee; color:#29483d; padding:8px 12px; margin-right:10px; cursor:pointer; }
+.photo-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.attendance-welcome .player-identity { font-size:13px; }
+@media (max-width:760px) {
+  .event-card-top { padding:12px 14px; }
+  .event-matchup { gap:7px; padding:20px 12px 16px; }
+  .event-matchup strong { font-size:17px; }
+  .event-matchup .club-badge-large { width:54px; height:54px; border-radius:14px; }
+  .attendance .event-gathering h2 { font-size:20px; }
+  .event-gathering { padding:17px 14px; }
+  .event-card-footer { padding:12px 14px; }
+  .attendance-person .player-avatar { width:38px; height:38px; }
+  .attendance-person .player-identity { gap:9px; }
+  .photo-edit-layout { align-items:flex-start; gap:12px; }
+  .player-avatar-large { width:72px; height:72px; }
+  .attendance-roster .attendance-person { align-items:flex-start; flex-wrap:wrap; }
+  .attendance-roster .attendance-person>.attendance-button { margin-left:47px; max-width:none; }
+}

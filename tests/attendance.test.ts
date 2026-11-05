@@ -23,6 +23,7 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
       grant execute on function auth.uid() to anon,authenticated;`);
     await db.exec(await readFile(new URL('../supabase/migrations/202611050001_attendance.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/202611050002_calendar_import.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202611050003_profile_photos.sql', import.meta.url), 'utf8'));
     await db.query('insert into auth.users values ($1,$2,now()),($3,$4,now()),($5,$6,now()),($7,$8,null)',
       [coach,'coach@example.test',player,'player@example.test',outsider,'outsider@example.test',unverified,'unverified@example.test']);
     await db.exec("insert into team_private.bootstrap_coach values ('coach@example.test')");
@@ -30,6 +31,8 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
     await t.test('anonymous visitors cannot read private events',async()=>{
       await db.exec('set role anon');
       await assert.rejects(db.query('select * from public.team_events'), /permission denied/);
+      await assert.rejects(db.query('select * from public.team_member_photos'), /permission denied/);
+      await assert.rejects(db.query('select public.set_profile_photo(null)'), /permission denied/);
     });
     await t.test('email verification is mandatory',async()=>{
       await as(unverified);
@@ -42,6 +45,7 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
       assert.equal((await db.query<{status:string}>('select status from public.team_members')).rows[0].status,'pending');
       assert.equal((await db.query('select * from public.team_events')).rows.length,0);
       await assert.rejects(db.query("select public.set_availability($1,'available')",[event]),/approval/);
+      await assert.rejects(db.query('select public.set_profile_photo(null)'),/approval/);
       await assert.rejects(db.query("update public.team_members set role='coach'"),/permission denied/);
       await assert.rejects(db.query("select public.manage_team_member($1,'approve')",[player]),/Only coaches/);
     });
@@ -63,6 +67,25 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
       assert.equal((await db.query('select * from public.team_squad')).rows.length,0);
       assert.equal((await db.query('select * from public.team_responses')).rows.length,0);
     });
+    await t.test('photos are private, self-owned, bounded JPEGs and removable',async()=>{
+      const jpeg='data:image/jpeg;base64,'+(await readFile(new URL('../public/clubs/zijp-fc.jpg',import.meta.url))).toString('base64');
+      await as(player);
+      await db.query('select public.set_profile_photo($1)',[jpeg]);
+      assert.equal((await db.query<{user_id:string}>('select user_id from public.team_member_photos')).rows[0].user_id,player);
+      await assert.rejects(db.query('update public.team_member_photos set user_id=$1',[coach]),/permission denied/);
+      await assert.rejects(db.query('select public.set_profile_photo($1,$2)',[coach,jpeg]),/does not exist/);
+      for(const invalid of ['https://example.test/photo.jpg','data:image/svg+xml;base64,'+'A'.repeat(300),'data:image/jpeg;base64,'+'A'.repeat(300),jpeg+'A'.repeat(90000)])
+        await assert.rejects(db.query('select public.set_profile_photo($1)',[invalid]),/JPEG/);
+      await as(coach);
+      assert.equal((await db.query<{photo:string}>('select photo from public.team_member_photos')).rows[0].photo,jpeg);
+      await db.query('select public.set_profile_photo($1)',[jpeg]);
+      await as(outsider);
+      assert.equal((await db.query('select * from public.team_member_photos')).rows.length,0);
+      await assert.rejects(db.query('select public.set_profile_photo($1)',[jpeg]),/approval/);
+      await as(player);
+      await db.query('select public.set_profile_photo(null)');
+      assert.deepEqual((await db.query<{user_id:string}>('select user_id from public.team_member_photos')).rows.map(r=>r.user_id),[coach]);
+    });
     await t.test('coach can transfer role but cannot remove the last coach',async()=>{
       await as(coach);
       await assert.rejects(db.query("select public.manage_team_member($1,'demote')",[coach]),/last coach/);
@@ -75,8 +98,10 @@ test('Postgres enforces private membership, own RSVP and coach-only squad select
     await t.test('revoked accounts lose access immediately and cannot rejoin themselves',async()=>{
       await as(player); await db.query("select public.manage_team_member($1,'remove')",[coach]);
       await as(coach); await db.query("select public.join_team('Coach again')");
+      assert.equal((await db.query('select * from public.team_member_photos')).rows.length,0);
       assert.equal((await db.query('select * from public.team_events')).rows.length,0);
       await assert.rejects(db.query("select public.set_availability($1,'available')",[event]),/approval/);
+      await assert.rejects(db.query('select public.set_profile_photo(null)'),/approval/);
     });
     await t.test('closed events reject new RSVPs',async()=>{
       await db.exec('reset role');

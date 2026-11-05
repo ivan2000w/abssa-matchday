@@ -25,7 +25,7 @@ calendar imports. Live email delivery still requires an end-to-end test at setup
 
 ## Deployment
 
-1. Create a Supabase project in Europe. Run both SQL migrations in order. The
+1. Create a Supabase project in Europe. Run all SQL migrations in order. The
    project may enable automatic RLS; the migrations also explicitly enable it.
 2. In a private SQL session, insert the chosen initial coach email into
    `team_private.bootstrap_coach`. Keep personal account details out of source.
@@ -84,3 +84,24 @@ and password update. Signed-in members can also use Set / change password.
 Successful changes use `updateUser` on the existing identity, preserving membership.
 Never set another person's password for them. Live password creation and final
 login verification require the account owner to enter their chosen password.
+
+## Profile photos and fixture cards
+
+Apply `202611050003_profile_photos.sql` before publishing the photo UI. Approved
+members can save, replace or remove only their own photo through
+`set_profile_photo`; direct writes are denied. `team_member_photos` is protected
+by RLS: approved teammates can read photos of approved members. Pending, removed
+and anonymous users cannot read them. Photos are not public storage URLs.
+
+The browser previews a centred 256px JPEG thumbnail, removes original EXIF/GPS
+metadata by re-encoding, and rejects unsupported/oversized files. The RPC checks
+membership, payload size, MIME prefix and JPEG markers. Only this thumbnail is
+stored. Calendar refreshes fetch small photo timestamps and download changed
+photos only; the in-memory cache clears when the account changes or loses access.
+No photos enter GitHub, localStorage or service-worker caches. For a substantially
+larger/multi-club product, move thumbnails to private object storage with signed
+URLs rather than increasing the database payload limit.
+
+Fixture logos use explicit, tested SportEasy aliases, preserving title order.
+Training, social events, unknown opponents and different reserve teams are never
+fuzzy-matched to another club. Missing verified crests retain neutral initials.

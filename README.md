@@ -10,7 +10,10 @@ Live app: https://ivan2000w.github.io/abssa-matchday/
 This repository contains the entire app, official-data collector and deployment
 workflows. GitHub Pages hosts the app; GitHub Actions collects data and publishes
 updates. No ChatGPT subscription, OpenAI account, local computer, external database
-or private API key is needed to run the app or its updater.
+or private API key is needed for public ABSSA results or their updater.
+
+The optional **My team** area uses Supabase for private accounts, SportEasy calendar,
+availability and coach-controlled squads. See [team setup and calendar limitations](docs/team-attendance.md).
 
 ## Automatic updates
 

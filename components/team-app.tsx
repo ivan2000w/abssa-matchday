@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import {
   ArrowLeft,
   CalendarDays,
@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+const AttendancePanel = lazy(() => import('@/components/attendance-panel').then(module => ({ default: module.AttendancePanel })));
 import initialSnapshot from '@/public/data/abssa.json';
 import { validateSnapshot } from '@/lib/abssa/validate';
 const verifiedSeed = initialSnapshot as AbssaSnapshot;
@@ -29,7 +30,7 @@ const BASE = import.meta.env.BASE_URL;
 import { clubIdentity } from '@/lib/abssa/clubs';
 import type { AbssaMatch, AbssaSnapshot } from '@/lib/abssa/types';
 
-type View = 'home' | 'fixtures' | 'results' | 'table' | 'clubs';
+type View = 'home' | 'fixtures' | 'results' | 'table' | 'clubs' | 'team';
 type Outcome = 'W' | 'D' | 'L';
 
 const SOURCE_URL = 'https://www.abssa.be/Abssabe-01';
@@ -41,6 +42,7 @@ const nav: { id: View; label: string; icon: typeof Home }[] = [
   { id: 'results', label: 'Results', icon: Trophy },
   { id: 'table', label: 'Table', icon: Table2 },
   { id: 'clubs', label: 'Clubs', icon: Users },
+  { id: 'team', label: 'My team', icon: Users },
 ];
 
 function dateAt(match: AbssaMatch) {
@@ -121,7 +123,7 @@ function ResultRow({ match, onTeamSelect }: { match: AbssaMatch; onTeamSelect: (
 }
 
 export function TeamApp() {
-  const [view, setView] = useState<View>('home');
+  const [view, setView] = useState<View>(new URLSearchParams(location.search).has('team') ? 'team' : 'home');
   const [snapshot, setSnapshot] = useState<AbssaSnapshot>(verifiedSeed);
   const [favoriteClub, setFavoriteClub] = useState(DEFAULT_CLUB);
   const [profileTeam, setProfileTeam] = useState<string | null>(null);
@@ -265,6 +267,7 @@ export function TeamApp() {
       <TabsContent value="fixtures" className="single-view"><div className="page-heading"><div><span className="eyebrow">ABSSA · {snapshot.season}</span><h1>{favoriteClub} fixtures</h1></div><button className="change-club" onClick={() => { setProfileTeam(null); setView('clubs'); }}>Change club <ChevronRight /></button></div><section className="section-card fixture-list">{clubFixtures.length ? clubFixtures.map((match) => <MatchRow key={match.id} match={match} focusTeam={favoriteClub} onTeamSelect={openTeam} />) : <p className="empty-copy">No future fixture is currently published by ABSSA.</p>}</section></TabsContent>
       <TabsContent value="results" className="single-view"><div className="page-heading"><div><span className="eyebrow">All teams · official scores</span><h1>Division 4B results</h1></div><span className="updated">{allResults.length} official results · latest first</span></div><div className="result-rounds">{resultRounds.map(([round, results]) => <section className="section-card result-list" key={round}><div className="result-round-heading"><span>Matchday {round}</span><small>{results.length} results</small></div>{results.map((result) => <ResultRow key={result.id} match={result} onTeamSelect={openTeam} />)}</section>)}</div></TabsContent>
       <TabsContent value="table" className="single-view"><div className="page-heading"><div><span className="eyebrow">Official ABSSA standings</span><h1>Division 4B</h1></div><span className="updated">Tap a club to open its match centre</span></div><p className="table-key">GF: goals for · GA: goals against · GD: goal difference</p><section className="section-card standings"><div className="table-head"><span>Pos</span><span>Club</span><span>P</span><span title="Goals for">GF</span><span title="Goals against">GA</span><span>GD</span><span>Pts</span></div>{snapshot.standings.map((row) => <button key={row.team} className={row.team === favoriteClub ? 'selected-row' : ''} onClick={() => openTeam(row.team)}><span>{row.position}</span><span><ClubBadge team={row.team} size="tiny" /><strong>{row.team}</strong></span><span>{row.played}</span><span>{row.goalsFor}</span><span>{row.goalsAgainst}</span><span>{row.goalsFor - row.goalsAgainst > 0 ? '+' : ''}{row.goalsFor - row.goalsAgainst}</span><b>{row.points}</b></button>)}</section></TabsContent>
+      <TabsContent value="team" className="single-view"><Suspense fallback={<p role="status">Opening team space…</p>}><AttendancePanel /></Suspense></TabsContent>
       <TabsContent value="clubs" className="single-view clubs-view">{renderClubs()}</TabsContent>
     </Tabs>
     <nav className="mobile-nav" aria-label="Main navigation">{nav.map(({ id, label, icon: Icon }) => <button key={id} className={view === id ? 'active' : ''} aria-current={view === id ? 'page' : undefined} onClick={() => { setView(id); setProfileTeam(null); window.scrollTo({ top: 0, behavior: 'instant' }); }}><Icon /><span>{label}</span></button>)}</nav>

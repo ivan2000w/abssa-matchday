@@ -63,7 +63,7 @@ function checkedAt(value: string) {
 }
 
 function initials(team: string) {
-  return team.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 3);
+  return (team.replace(/\([^)]*\)/g, '').match(/\p{L}+/gu) ?? []).map((part) => part[0]).join('').slice(0, 3);
 }
 
 function ordinalSuffix(position: number) {
@@ -80,13 +80,15 @@ function outcome(match: AbssaMatch, team: string): Outcome | null {
 
 function ClubBadge({ size = 'medium', team }: { size?: 'tiny' | 'small' | 'medium' | 'large'; team: string }) {
   const identity = clubIdentity(team);
-  const title = identity.logo ? `Official ${team} crest` : `${team} neutral badge — official crest not yet verified`;
+  const [failedLogo, setFailedLogo] = useState<string | null>(null);
+  const showLogo = Boolean(identity.logo && failedLogo !== identity.logo);
+  const title = showLogo ? `${team} crest · ${identity.sourceLabel ?? "Club source"}` : `${team} initials — ${identity.logo ? "crest temporarily unavailable" : "official crest not yet verified"}`;
   return <span
-    className={`club-badge club-badge-${size} ${identity.logo ? 'club-badge-official' : 'club-badge-fallback'}`}
+    className={`club-badge club-badge-${size} ${showLogo ? 'club-badge-official' : 'club-badge-fallback'}`}
     style={{ '--club-primary': identity.primary, '--club-secondary': identity.secondary } as CSSProperties}
     title={title}
   >
-    {identity.logo ? <img src={`${BASE}${identity.logo.replace(/^\//, '')}`} alt={`${team} crest`} /> : <span aria-hidden="true">{initials(team)}</span>}
+    {showLogo ? <img src={`${BASE}${identity.logo!.replace(/^\//, '')}`} alt={`${team} crest`} decoding="async" onError={() => setFailedLogo(identity.logo!)} /> : <span aria-hidden="true">{initials(team)}</span>}
   </span>;
 }
 
@@ -222,11 +224,11 @@ export function TeamApp() {
     if (!profileTeam) {
       const visibleClubs = snapshot.standings.filter((row) => row.team.toLowerCase().includes(clubSearch.trim().toLowerCase()));
       return <>
-      <div className="page-heading"><div><span className="eyebrow">Division 4B · {snapshot.season}</span><h1>Choose a club</h1></div><span className="updated">Tap any club for its complete match centre</span></div>
+      <div className="page-heading"><div><span className="eyebrow">Division 4B · {snapshot.season}</span><h1>The clubs</h1></div><span className="updated">Explore every team, result and upcoming fixture</span></div>
       <div className="club-tools"><label><Search /><input value={clubSearch} onChange={(event) => setClubSearch(event.target.value)} placeholder="Find a club" aria-label="Find a club" /></label><span>{visibleClubs.length} clubs</span></div>
-      <p className="crest-note"><CheckCircle2 /> Official crests appear where a club-owned source is verified. Initial badges are neutral placeholders.</p>
-      <section className="club-directory">{visibleClubs.map((row) => <button key={row.team} className={row.team === favoriteClub ? 'favorite-club' : ''} onClick={() => openTeam(row.team)}>
-        <span className="directory-position">{row.position}</span><ClubBadge team={row.team} /><span className="directory-copy"><strong>{row.team}</strong><small>{row.played} played · {row.points} pts</small></span>{row.team === favoriteClub ? <Star className="favorite-star" fill="currentColor" /> : <ChevronRight />}
+      <p className="crest-note"><CheckCircle2 /> Club crests are checked against public sources. Initials mean a crest is still unverified.</p>
+      <section className="club-directory">{visibleClubs.map((row) => <button key={row.team} className={row.team === favoriteClub ? 'favorite-club' : ''} style={{ '--club-accent': clubIdentity(row.team).primary } as CSSProperties} onClick={() => openTeam(row.team)}>
+        <span className="directory-position" aria-label={`League position ${row.position}`}>#{row.position}</span><ClubBadge team={row.team} /><span className="directory-copy"><strong>{row.team}</strong><small>{row.played} played <span>·</span> <b>{row.points} pts</b></small><span className="directory-link">View matches <ChevronRight /></span></span>{row.team === favoriteClub ? <Star className="favorite-star" fill="currentColor" /> : <ChevronRight />}
       </button>)}</section>{visibleClubs.length === 0 ? <p className="empty-copy">No club matches “{clubSearch}”.</p> : null}
     </>;
     }
@@ -241,7 +243,7 @@ export function TeamApp() {
     const profileIdentity = clubIdentity(profileTeam);
     return <div className="team-profile">
       <button className="back-button" onClick={() => setProfileTeam(null)}><ArrowLeft />All clubs</button>
-      <section className="team-profile-hero"><ClubBadge team={profileTeam} size="large" /><div><span className="eyebrow">ABSSA Division 4B</span><h1>{profileTeam}</h1><p>{profileStanding ? `${profileStanding.position}${ordinalSuffix(profileStanding.position)} · ${profileStanding.points} points` : snapshot.season}</p>{profileIdentity.officialSource ? <a className="badge-status" href={profileIdentity.officialSource} target="_blank" rel="noreferrer"><CheckCircle2 /> Official crest source</a> : <small className="badge-status">Initial badge · crest not yet verified</small>}</div><Button variant={isFavorite ? 'outline' : 'default'} onClick={() => chooseFavorite(profileTeam)} disabled={isFavorite}><Star fill={isFavorite ? 'currentColor' : 'none'} />{isFavorite ? 'My club' : 'Make my club'}</Button></section>
+      <section className="team-profile-hero" style={{ '--profile-accent': profileIdentity.primary } as CSSProperties}><ClubBadge team={profileTeam} size="large" /><div><span className="eyebrow">ABSSA Division 4B</span><h1>{profileTeam}</h1><p>{profileStanding ? `${profileStanding.position}${ordinalSuffix(profileStanding.position)} · ${profileStanding.points} points` : snapshot.season}</p>{profileIdentity.officialSource ? <a className="badge-status" href={profileIdentity.officialSource} target="_blank" rel="noreferrer"><CheckCircle2 /> {profileIdentity.sourceLabel ?? 'Club website'}</a> : <small className="badge-status">Initial badge · crest not yet verified</small>}</div><Button variant={isFavorite ? 'outline' : 'default'} onClick={() => chooseFavorite(profileTeam)} disabled={isFavorite}><Star fill={isFavorite ? 'currentColor' : 'none'} />{isFavorite ? 'My club' : 'Make my club'}</Button></section>
       {profileStanding ? <div className="profile-stats"><Card><CardContent><span>Played</span><strong>{profileStanding.played}</strong></CardContent></Card><Card><CardContent><span>Record</span><strong>{profileStanding.won}W · {profileStanding.drawn}D · {profileStanding.lost}L</strong></CardContent></Card><Card><CardContent><span>Goals</span><strong>{profileStanding.goalsFor}–{profileStanding.goalsAgainst}</strong></CardContent></Card><Card><CardContent><span>Recent form</span><div className="form-strip">{recentForm.length ? recentForm.map((item, index) => <i key={index} className={`outcome outcome-${item}`}>{item}</i>) : <small>—</small>}</div></CardContent></Card></div> : null}
       {future[0] ? <section className="profile-next"><div><span className="eyebrow">Next match</span><h2>{longDate(future[0])} · {future[0].time}</h2></div><div className="profile-next-teams"><TeamButton team={future[0].home} onSelect={openTeam} /><span>vs</span><TeamButton team={future[0].away} onSelect={openTeam} /></div></section> : null}
       <div className="match-segments" aria-label="Team matches"><button aria-pressed={profileMatches === 'results'} onClick={() => setProfileMatches('results')}>Results <span>{past.length}</span></button><button aria-pressed={profileMatches === 'fixtures'} onClick={() => setProfileMatches('fixtures')}>Fixtures <span>{future.length}</span></button></div>

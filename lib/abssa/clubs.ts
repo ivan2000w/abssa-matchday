@@ -3,11 +3,11 @@ export type ClubIdentity = {
   primary: string;
   secondary: string;
   officialSource?: string;
+  sourceLabel?: string;
 };
 
-// A crest is only added when it can be traced to a club-owned page. The
-// remaining teams keep a neutral, colour-coded monogram until a source is
-// verified; this prevents a generated badge from being mistaken for a crest.
+// Only source-verified club artwork is used; see docs/club-logos.md.
+// Unverified clubs retain plain initials, never a generated crest.
 export const clubIdentities: Record<string, ClubIdentity> = {
   'SANSERIF FC': {
     logo: '/clubs/sanserif-fc.png',
@@ -21,18 +21,72 @@ export const clubIdentities: Record<string, ClubIdentity> = {
     secondary: '#ffffff',
     officialSource: 'https://rcsazur.be/',
   },
-  'ZIJP FC': { primary: '#17191b', secondary: '#f4f4ef' },
-  'NEPTUNE FC': { primary: '#1658a8', secondary: '#e9f2ff' },
-  'WATERMAEL FC 3': { primary: '#125c8f', secondary: '#f2d64b' },
-  'BRUSSELS LTC 3': { primary: '#243c78', secondary: '#f2f4ff' },
-  'TIEKSS WEMMEL': { primary: '#2d6948', secondary: '#dff5df' },
-  'COSMOS BRUWOLF MJ 1': { primary: '#442366', secondary: '#f0ddff' },
-  'CORNAC UNITED FC 1': { primary: '#8a3a2c', secondary: '#ffe8ca' },
-  'BLUE THRILLS': { primary: '#176ba0', secondary: '#e4f6ff' },
-  'BLEU-BLANC (ENT)R.': { primary: '#155ab6', secondary: '#ffffff' },
-  'FRIENDS SPIRIT AUD': { primary: '#744467', secondary: '#ffe6f6' },
-  'STRING PENELOPE 2': { primary: '#d05b22', secondary: '#fff0df' },
-  'PICARDIE AS 1': { primary: '#6c2738', secondary: '#ffe7eb' },
+  'ZIJP FC': {
+    logo: '/clubs/zijp-fc.jpg',
+    primary: '#181819',
+    secondary: '#c8ab57',
+    officialSource: 'https://www.instagram.com/fczijp/',
+    sourceLabel: 'Club Instagram',
+  },
+  'NEPTUNE FC': {
+    logo: '/clubs/neptune-fc.png',
+    primary: '#252446',
+    secondary: '#ffffff',
+    officialSource: 'https://rfc-neptune.sporteasy.net/',
+    sourceLabel: 'Club SportEasy',
+  },
+  'WATERMAEL FC 3': {
+    logo: '/clubs/watermael-fc.jpg',
+    primary: '#176fae',
+    secondary: '#ffffff',
+    officialSource: 'https://www.instagram.com/fcwatermael/',
+    sourceLabel: 'Club Instagram',
+  },
+  'BRUSSELS LTC 3': { primary: '#58656c', secondary: '#edf0f2' },
+  'TIEKSS WEMMEL': {
+    logo: '/clubs/tiekss-wemmel.png',
+    primary: '#202020',
+    secondary: '#d42e32',
+    officialSource: 'https://www.wemmel.be/fr/association/160/tieks-asbl',
+    sourceLabel: 'Wemmel club directory',
+  },
+  'COSMOS BRUWOLF MJ 1': {
+    logo: '/clubs/cosmos-bruwolf.jpg',
+    primary: '#282a2c',
+    secondary: '#ef9b32',
+    officialSource: 'https://www.instagram.com/cosmos_bruwolf_mj/',
+    sourceLabel: 'Club Instagram',
+  },
+  'CORNAC UNITED FC 1': {
+    logo: '/clubs/cornac-united.jpg',
+    primary: '#ac1f2d',
+    secondary: '#ffffff',
+    officialSource: 'https://cornac-united-fc-1.sporteasy.net/',
+    sourceLabel: 'Club SportEasy',
+  },
+  'BLUE THRILLS': {
+    logo: '/clubs/blue-thrills.jpg',
+    primary: '#14549b',
+    secondary: '#ffffff',
+    officialSource: 'https://www.instagram.com/bluethrillsunited/',
+    sourceLabel: 'Club Instagram',
+  },
+  'BLEU-BLANC (ENT)R.': { primary: '#58656c', secondary: '#edf0f2' },
+  'FRIENDS SPIRIT AUD': {
+    logo: '/clubs/friends-spirit.jpg',
+    primary: '#1a5798',
+    secondary: '#ffffff',
+    officialSource: 'https://www.instagram.com/friendsspiritfc/',
+    sourceLabel: 'Club Instagram',
+  },
+  'STRING PENELOPE 2': {
+    logo: '/clubs/string-penelope.png',
+    primary: '#185a9a',
+    secondary: '#ffffff',
+    officialSource: 'https://string-penelope-1.sporteasy.net/',
+    sourceLabel: 'Club SportEasy',
+  },
+  'PICARDIE AS 1': { primary: '#58656c', secondary: '#edf0f2' },
 };
 
 export function clubIdentity(team: string): ClubIdentity {

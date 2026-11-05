@@ -7,7 +7,10 @@ Only the Supabase authentication session is persisted on the user's device.
 
 ## Membership and permissions
 
-Email-link authentication verifies the user's email before `join_team` can run.
+Email/password signup verifies the user's email once before `join_team` can run.
+Returning users log in with their password. Existing email-link accounts can set
+a password while signed in, or use the password setup/reset email once. Passwords
+are sent only to Supabase Auth and never stored in app tables or browser storage.
 New members are pending until a coach approves them. Approved members can read
 team events, other approved members' names, responses and the selected squad.
 Players can set only their own response. Responses do not select or deselect a
@@ -66,3 +69,18 @@ The importer logs counts only, never subscription URLs, keys, event details or
 names. Keep private initial imports outside the repository. The public service
 worker only handles same-origin GitHub resources; cross-origin Supabase responses
 are not cached. Changing backend hosting requires reviewing that boundary.
+
+## Password login and recovery
+
+The default My team screen has Log in and Create account options. Registration
+uses Supabase `signUp`; login uses `signInWithPassword`. Keep email confirmation
+enabled. Forgot password and first-password setup use `resetPasswordForEmail`.
+Both confirmation and recovery return to the existing Site URL with `?team=1`.
+
+The auth client subscribes to PASSWORD_RECOVERY before the lazy React panel
+mounts. A per-tab UI flag preserves the password form across reloads until saved,
+cancelled or signed out. It grants no access; Supabase still validates the session
+and password update. Signed-in members can also use Set / change password.
+Successful changes use `updateUser` on the existing identity, preserving membership.
+Never set another person's password for them. Live password creation and final
+login verification require the account owner to enter their chosen password.

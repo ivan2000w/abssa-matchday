@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { CalendarDays, Check, ChevronLeft, LogOut, RefreshCw, ShieldCheck, Users } from 'lucide-react';
-import { attendance, type Availability, type Member, type Response, type Squad, type TeamEvent } from '@/lib/attendance/client';
+import { AccountAccess, AccountPassword } from './account-access';
+import { attendance, authLinkError, passwordRecovery, type Availability, type Member, type Response, type Squad, type TeamEvent } from '@/lib/attendance/client';
 
 const labels: Record<Availability,string> = {available:'Available',unavailable:'Unavailable',maybe:'Maybe'};
 const date = (value:string) => new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Brussels'}).format(new Date(value));
@@ -9,7 +10,8 @@ const date = (value:string) => new Intl.DateTimeFormat('en-GB',{weekday:'short',
 export function AttendancePanel() {
   const [session,setSession] = useState<Session|null>(null);
   const [authReady,setAuthReady] = useState(false);
-  const [email,setEmail] = useState('');
+  const recovery=useSyncExternalStore(passwordRecovery.subscribe,passwordRecovery.get);
+  const [editingPassword,setEditingPassword]=useState(false);
   const [name,setName] = useState('');
   const [members,setMembers] = useState<Member[]>([]);
   const [events,setEvents] = useState<TeamEvent[]>([]);
@@ -19,7 +21,7 @@ export function AttendancePanel() {
   const [loaded,setLoaded] = useState(false);
   const [detailsReady,setDetailsReady] = useState(false);
   const [busy,setBusy] = useState(false);
-  const [error,setError] = useState('');
+  const [error,setError] = useState(authLinkError);
   const [notice,setNotice] = useState('');
   const [history,setHistory] = useState(false);
   const sequence = useRef(0);
@@ -85,13 +87,6 @@ export function AttendancePanel() {
     catch(err){setError(err instanceof Error?err.message:(err as {message?:string})?.message||'Could not save. Please retry.');}
     finally{setBusy(false);}
   };
-  const signIn=async(e:FormEvent)=>{
-    e.preventDefault();if(!attendance)return;
-    setBusy(true);setError('');setNotice('');
-    const redirect=new URL(import.meta.env.BASE_URL,location.origin);redirect.searchParams.set('team','1');
-    const {error:err}=await attendance.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:redirect.href}});
-    setBusy(false);if(err)setError(err.message);else setNotice('Check your email for your secure sign-in link. New members can request team access after signing in.');
-  };
   const manage=(member:Member,action:'approve'|'remove'|'promote'|'demote')=>{
     if(!attendance)return;
     if(action!=='approve'&&!window.confirm(`${action==='promote'?'Make coach':action==='demote'?'Remove coach role from':'Remove team access for'} ${member.display_name}?`))return;
@@ -101,17 +96,18 @@ export function AttendancePanel() {
     if(!attendance)return;
     setBusy(true);setError('');setNotice('');
     const {error:err}=await attendance.auth.signOut({scope:'local'});
-    if(err)setError(err.message);else{clear();setSession(null);}
+    if(err)setError(err.message);else{clear();setSession(null);setEditingPassword(false);passwordRecovery.finish();}
     setBusy(false);
   };
 
   if(!attendance)return <section className="attendance-card"><ShieldCheck/><h1>Sanserif team space</h1><p>Private accounts and attendance are being connected. They are not available yet.</p></section>;
   if(!authReady)return <p role="status">Checking your sign-in…</p>;
   return <div className="attendance">
-    <div className="attendance-title"><div><span className="eyebrow">Private · SANSERIF FC</span><h1>My team</h1></div>{session&&<button className="attendance-button" disabled={busy} onClick={()=>void signOut()}><LogOut size={16}/>Sign out</button>}</div>
+    <div className="attendance-title"><div><span className="eyebrow">Private · SANSERIF FC</span><h1>My team</h1></div>{session&&<div className="account-actions"><button className="attendance-button" disabled={busy} onClick={()=>{setEditingPassword(true);setError('');setNotice('');}}>Set / change password</button><button className="attendance-button" disabled={busy} onClick={()=>void signOut()}><LogOut size={16}/>Sign out</button></div>}</div>
     {error&&<p className="attendance-error" role="alert">{error}</p>}
     {notice&&<p className="attendance-notice" role="status">{notice}</p>}
-    {!session ? <section className="attendance-card auth-card"><ShieldCheck size={32}/><h2>Your team. Your matchday.</h2><p>Sign in or create an account with your email. After coach approval, see the calendar, tell the team when you’re available and check the selected squad.</p><form onSubmit={signIn}><label>Email address<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><button className="attendance-button primary" disabled={busy}>{busy?'Sending…':'Email me a sign-in link'}</button></form><small>Attendance is visible to approved team members. Only coaches select the squad.</small></section>
+    {!session ? <AccountAccess/>
+    : recovery||editingPassword ? <AccountPassword onDone={()=>{passwordRecovery.finish();setEditingPassword(false);setNotice('Password saved. Next time, log in with your email and password.');}} onCancel={()=>{passwordRecovery.finish();setEditingPassword(false);}}/>
     : !loaded ? <section className="attendance-card"><p>Loading your team…</p><button className="attendance-button" onClick={()=>void load()}>Retry</button></section>
     : !me ? <section className="attendance-card"><h2>Join Sanserif FC</h2><p>Use the name your teammates know. A coach will approve your request.</p><form onSubmit={e=>{e.preventDefault();void mutate(()=>attendance!.rpc('join_team',{p_name:name.trim()}));}}><label>Your name<input required minLength={2} maxLength={60} autoComplete="name" value={name} onChange={e=>setName(e.target.value)}/></label><button className="attendance-button primary" disabled={busy}>Request team access</button></form></section>
     : me.status!=='approved' ? <section className="attendance-card"><h2>{me.status==='pending'?'Waiting for coach approval':'Team access removed'}</h2><p>{me.status==='pending'?'Your request is saved. Once a coach approves you, your calendar and teammates will appear here.':'Contact your coach if you need to rejoin.'}</p><button className="attendance-button" onClick={()=>void load()}><RefreshCw size={16}/>Check access</button></section>

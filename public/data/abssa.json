@@ -2,7 +2,7 @@
   "division": "4B",
   "season": "2026/27",
   "sourceUrl": "https://www.abssa.be/Abssabe-01",
-  "fetchedAt": "2026-11-07T22:13:44.202Z",
+  "fetchedAt": "2026-11-14T22:41:22.803Z",
   "sourceStatus": "verified",
   "matches": [
     {
@@ -936,10 +936,10 @@
       "time": "11:00",
       "home": "SANSERIF FC",
       "away": "TIEKSS WEMMEL",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 1,
+      "awayScore": 3,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-1",
@@ -948,10 +948,10 @@
       "time": "12:30",
       "home": "FRIENDS SPIRIT AUD",
       "away": "BRUSSELS LTC 3",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 0,
+      "awayScore": 1,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-2",
@@ -960,10 +960,10 @@
       "time": "12:30",
       "home": "WATERMAEL FC 3",
       "away": "CORNAC UNITED FC 1",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 1,
+      "awayScore": 2,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-7",
@@ -972,10 +972,10 @@
       "time": "13:30",
       "home": "PICARDIE AS 1",
       "away": "AZUR RCS 4",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 1,
+      "awayScore": 6,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-5",
@@ -984,10 +984,10 @@
       "time": "15:00",
       "home": "NEPTUNE FC",
       "away": "COSMOS BRUWOLF MJ 1",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 1,
+      "awayScore": 3,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-3",
@@ -996,10 +996,10 @@
       "time": "15:30",
       "home": "BLEU-BLANC (ENT)R.",
       "away": "STRING PENELOPE 2",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 5,
+      "awayScore": 1,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-12-6",
@@ -1008,10 +1008,10 @@
       "time": "15:30",
       "home": "ZIJP FC",
       "away": "BLUE THRILLS",
-      "homeScore": null,
-      "awayScore": null,
+      "homeScore": 3,
+      "awayScore": 1,
       "note": "",
-      "status": "scheduled"
+      "status": "final"
     },
     {
       "id": "4b-13-7",
@@ -2194,155 +2194,155 @@
     {
       "position": 1,
       "team": "ZIJP FC",
-      "played": 11,
-      "won": 9,
+      "played": 12,
+      "won": 10,
       "lost": 1,
       "drawn": 1,
-      "goalsFor": 51,
-      "goalsAgainst": 15,
-      "points": 28
+      "goalsFor": 54,
+      "goalsAgainst": 16,
+      "points": 31
     },
     {
       "position": 2,
-      "team": "NEPTUNE FC",
-      "played": 11,
+      "team": "TIEKSS WEMMEL",
+      "played": 12,
       "won": 7,
       "lost": 3,
-      "drawn": 1,
-      "goalsFor": 30,
-      "goalsAgainst": 15,
-      "points": 22
+      "drawn": 2,
+      "goalsFor": 36,
+      "goalsAgainst": 22,
+      "points": 23
     },
     {
       "position": 3,
-      "team": "TIEKSS WEMMEL",
-      "played": 11,
-      "won": 6,
-      "lost": 3,
-      "drawn": 2,
-      "goalsFor": 33,
-      "goalsAgainst": 21,
-      "points": 20
+      "team": "NEPTUNE FC",
+      "played": 12,
+      "won": 7,
+      "lost": 4,
+      "drawn": 1,
+      "goalsFor": 31,
+      "goalsAgainst": 18,
+      "points": 22
     },
     {
       "position": 4,
-      "team": "WATERMAEL FC 3",
-      "played": 11,
-      "won": 6,
-      "lost": 4,
-      "drawn": 1,
-      "goalsFor": 21,
-      "goalsAgainst": 16,
-      "points": 19
+      "team": "BRUSSELS LTC 3",
+      "played": 12,
+      "won": 7,
+      "lost": 5,
+      "drawn": 0,
+      "goalsFor": 33,
+      "goalsAgainst": 19,
+      "points": 21
     },
     {
       "position": 5,
-      "team": "BRUSSELS LTC 3",
-      "played": 11,
+      "team": "COSMOS BRUWOLF MJ 1",
+      "played": 12,
+      "won": 6,
+      "lost": 3,
+      "drawn": 3,
+      "goalsFor": 33,
+      "goalsAgainst": 19,
+      "points": 21
+    },
+    {
+      "position": 6,
+      "team": "CORNAC UNITED FC 1",
+      "played": 12,
+      "won": 6,
+      "lost": 4,
+      "drawn": 2,
+      "goalsFor": 30,
+      "goalsAgainst": 34,
+      "points": 20
+    },
+    {
+      "position": 7,
+      "team": "WATERMAEL FC 3",
+      "played": 12,
       "won": 6,
       "lost": 5,
-      "drawn": 0,
-      "goalsFor": 32,
+      "drawn": 1,
+      "goalsFor": 22,
+      "goalsAgainst": 18,
+      "points": 19
+    },
+    {
+      "position": 8,
+      "team": "SANSERIF FC",
+      "played": 12,
+      "won": 5,
+      "lost": 4,
+      "drawn": 3,
+      "goalsFor": 17,
       "goalsAgainst": 19,
       "points": 18
     },
     {
-      "position": 6,
-      "team": "COSMOS BRUWOLF MJ 1",
-      "played": 11,
-      "won": 5,
-      "lost": 3,
-      "drawn": 3,
-      "goalsFor": 30,
-      "goalsAgainst": 18,
-      "points": 18
-    },
-    {
-      "position": 7,
-      "team": "SANSERIF FC",
-      "played": 11,
-      "won": 5,
-      "lost": 3,
-      "drawn": 3,
-      "goalsFor": 16,
-      "goalsAgainst": 16,
-      "points": 18
-    },
-    {
-      "position": 8,
-      "team": "CORNAC UNITED FC 1",
-      "played": 11,
-      "won": 5,
-      "lost": 4,
-      "drawn": 2,
-      "goalsFor": 28,
-      "goalsAgainst": 33,
-      "points": 17
-    },
-    {
       "position": 9,
       "team": "AZUR RCS 4",
-      "played": 11,
-      "won": 4,
+      "played": 12,
+      "won": 5,
       "lost": 5,
       "drawn": 2,
-      "goalsFor": 26,
-      "goalsAgainst": 26,
-      "points": 14
+      "goalsFor": 32,
+      "goalsAgainst": 27,
+      "points": 17
     },
     {
       "position": 10,
       "team": "BLEU-BLANC (ENT)R.",
-      "played": 11,
-      "won": 3,
+      "played": 12,
+      "won": 4,
       "lost": 5,
       "drawn": 3,
-      "goalsFor": 25,
-      "goalsAgainst": 24,
-      "points": 12
+      "goalsFor": 30,
+      "goalsAgainst": 25,
+      "points": 15
     },
     {
       "position": 11,
       "team": "BLUE THRILLS",
-      "played": 11,
+      "played": 12,
       "won": 3,
-      "lost": 8,
+      "lost": 9,
       "drawn": 0,
-      "goalsFor": 14,
-      "goalsAgainst": 27,
+      "goalsFor": 15,
+      "goalsAgainst": 30,
       "points": 9
     },
     {
       "position": 12,
       "team": "STRING PENELOPE 2",
-      "played": 11,
+      "played": 12,
       "won": 2,
-      "lost": 6,
+      "lost": 7,
       "drawn": 3,
-      "goalsFor": 14,
-      "goalsAgainst": 34,
+      "goalsFor": 15,
+      "goalsAgainst": 39,
       "points": 9
     },
     {
       "position": 13,
       "team": "FRIENDS SPIRIT AUD",
-      "played": 11,
+      "played": 12,
       "won": 2,
-      "lost": 6,
+      "lost": 7,
       "drawn": 3,
       "goalsFor": 14,
-      "goalsAgainst": 28,
+      "goalsAgainst": 29,
       "points": 9
     },
     {
       "position": 14,
       "team": "PICARDIE AS 1",
-      "played": 11,
+      "played": 12,
       "won": 1,
-      "lost": 8,
+      "lost": 9,
       "drawn": 2,
-      "goalsFor": 7,
-      "goalsAgainst": 49,
+      "goalsFor": 8,
+      "goalsAgainst": 55,
       "points": 5
     }
   ]
